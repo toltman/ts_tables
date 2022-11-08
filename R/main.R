@@ -1,4 +1,13 @@
+library(tidyverse)
+library(readxl)
+library(here)
 library(writexl)
+
+source(here::here("R", "TableA1-1617.R"))
+source(here::here("R", "TableA1-1718.R"))
+source(here::here("R", "TableA1-1819.R"))
+source(here::here("R", "TableA1-1920.R"))
+source(here::here("R", "TableA1-2021.R"))
 
 df_all <- cbind(df_2021, df_1920, df_1819, df_1718, df_1617)
 
