@@ -1,17 +1,3 @@
-# By sector and year...
-# Secondary School Persistance
-# By Sector and year...
-
-# Secondary School Persistence Rate: percentage in grades 6-11 completing
-# the current year and continuing into the next year at the next grade level.
-
-# Denominator: at time of first service: middle school students or non-senior
-# highschool students (including 4th year in 5 year program) ->
-# Section III: A1, A2, A3, A4, and A7
-# minus deceased, Section IV, A4
-# 
-
-
 fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
 ts2 <- read_excel(here::here("Data", "Data 2020-21", "TS2.xlsx"))
 ts3 <- read_excel(here::here("Data", "Data 2020-21", "TS3.xlsx"))
@@ -50,14 +36,24 @@ df <- df %>%
     mutate(
         Denom_SecSchPersPct = MidSchNo + HighSchFshNo + HighSchSophNo + 
             HighSchJrNo + HighSch4yrDEnrlNo - Part4ADeceasedNo,
-        TOCalc_SecSchPersPct = PersistedNextNo / Denom_SecSchPersPct,
-        TOCalc_SecSchGradRegPct = (RcvdRSDipNo + RcvdRSdipRigPgmNo) / 
-            (HighSchSNo + HighSch5yrDEnrlNo - Part4ADeceasedNo),
-        TOCalc_SecSchGradRigPct = (RcvdRSdipRigPgmNo) /
-            (HighSchSNo + HighSch5yrDEnrlNo - Part4ADeceasedNo),
-        TOCalc_FAFSA = (SenrCompFASFAPNO + SenrCompFASFAenrlCollgPNO) / TotKPNO,
-        TOCalc_PostSecEnrllPct = PSE_TotC1C2 / 
-            (RcvdRSDipNo + RcvdRSdipRigPgmNo - Part4ADeceasedNo)
+        Numer_SecSchPersPct = PersistedNextNo,
+        TOCalc_SecSchPersPct = Numer_SecSchPersPct / Denom_SecSchPersPct,
+
+        Denom_SecSchGradRegPct = HighSchSNo + HighSch5yrDEnrlNo - Part4ADeceasedNo,
+        Numer_SecSchGradRegPct = RcvdRSDipNo + RcvdRSdipRigPgmNo,
+        TOCalc_SecSchGradRegPct = Numer_SecSchGradRegPct / Denom_SecSchGradRegPct,
+
+        Denom_SecSchGradRigPct = HighSchSNo + HighSch5yrDEnrlNo - Part4ADeceasedNo,
+        Numer_SecSchGradRigPct = RcvdRSdipRigPgmNo,
+        TOCalc_SecSchGradRigPct = Numer_SecSchGradRigPct / Denom_SecSchGradRigPct,
+
+        Denom_fafsa = TotKPNO,
+        Numer_fafsa = SenrCompFASFAPNO + SenrCompFASFAenrlCollgPNO,
+        TOCalc_FAFSA = Numer_fafsa / Denom_fafsa,
+
+        Denom_PostSecEnrllPct = RcvdRSDipNo + RcvdRSdipRigPgmNo - Part4ADeceasedNo,
+        Numer_PostSecEnrllPct = PSE_TotC1C2,
+        TOCalc_PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
 ts_obj <- read_excel(here::here("Data", "Data 2020-21", "TSObjective.xlsx"))
@@ -73,13 +69,58 @@ ts_obj <- ts_obj %>%
 
 df <- left_join(df, ts_obj, by = c("PRNo" = "PRNO"))
 
-df %>%
+# df %>%
+#     select(
+#         PRNo, Sector,
+#         TSObj_SecSchPersPct, TS4_SecSchPersPct, TOCalc_SecSchPersPct,
+#         TSObj_SecSchGradRegPct, TS4_SecSchGradPctI, TOCalc_SecSchGradRegPct,
+#         TSObj_SecSchGradRigPct, TS4_SecSchGradPctII, TOCalc_SecSchGradRigPct,
+#         TOCalc_FAFSA,
+#         TSObj_PostSecEnrllPct, TOCalc_PostSecEnrllPct
+#     ) %>%
+#     glimpse()
+
+a2 <- df %>%
     select(
-        PRNo, Sector,
-        TSObj_SecSchPersPct, TS4_SecSchPersPct, TOCalc_SecSchPersPct,
-        TSObj_SecSchGradRegPct, TS4_SecSchGradPctI, TOCalc_SecSchGradRegPct,
-        TSObj_SecSchGradRigPct, TS4_SecSchGradPctII, TOCalc_SecSchGradRigPct,
-        TOCalc_FAFSA,
-        TSObj_PostSecEnrllPct, TOCalc_PostSecEnrllPct
+        PRNo, Sector, 
+        Denom_SecSchPersPct, Numer_SecSchPersPct,
+        Denom_SecSchGradRegPct, Numer_SecSchGradRegPct,
+        Denom_SecSchGradRigPct, Numer_SecSchGradRigPct,
+        Denom_fafsa, Numer_fafsa,
+        Denom_PostSecEnrllPct, Numer_PostSecEnrllPct
+    )
+
+a2 <- a2 %>%
+    mutate(
+        Sector = factor(
+            Sector,
+            levels = c("A", "B", "C", "D", "E", "F", "G", "H", "I")
+        ),
+        Sector = fct_collapse(
+            Sector,
+            four_year = c("A", "B", "H"),
+            two_year = c("C", "D", "I"),
+            other = c("E", "F", "G")
+        )
+    )
+
+a2 %>%
+    group_by(Sector) %>%
+    summarise(across(-PRNo, sum)) %>%
+    mutate(
+        SecSchPersPct = Numer_SecSchPersPct / Denom_SecSchPersPct,
+        SecSchGradRegPct = Numer_SecSchGradRegPct / Denom_SecSchGradRegPct,
+        SecSchGradRigPct = Numer_SecSchGradRigPct / Denom_SecSchGradRigPct,
+        fafsa = Numer_fafsa / Denom_fafsa,
+        PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
+    ) %>%
+    select(
+        Sector,
+        SecSchPersPct,
+        SecSchGradRegPct,
+        SecSchGradRigPct,
+        fafsa,
+        PostSecEnrllPct
     ) %>%
     glimpse()
+
