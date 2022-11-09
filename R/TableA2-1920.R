@@ -1,7 +1,8 @@
-fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
-ts2 <- read_excel(here::here("Data", "Data 2020-21", "TS2.xlsx"))
-ts3 <- read_excel(here::here("Data", "Data 2020-21", "TS3.xlsx"))
-ts4 <- read_excel(here::here("Data", "Data 2020-21", "TS4.xlsx"))
+fun <- read_excel(here::here("Data", "Data 2019-20", "FY2019TSFundedDetails-MinSecReg.xlsx"))
+ts2 <- read_excel(here::here("Data", "Data 2019-20", "TS2 2019-20.xlsx"))
+ts3 <- read_excel(here::here("Data", "Data 2019-20", "TS3 2019-20.xlsx"))
+ts4 <- read_excel(here::here("Data", "Data 2019-20", "TS4 2019-20.xlsx"))
+ts_obj <- read_excel(here::here("Data", "Data 2019-20", "TSObjective 2019-20.xlsx"))
 
 fun <- fun %>%
     select(PRNo, Sector)
@@ -56,7 +57,6 @@ df <- df %>%
         TOCalc_PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
-ts_obj <- read_excel(here::here("Data", "Data 2020-21", "TSObjective.xlsx"))
 
 ts_obj <- ts_obj %>%
     select(PRNO, SecSchPersPct, SecSchGradRegPct, SecSchGradRigPct, PostSecEnrllPct) %>%
@@ -80,7 +80,7 @@ df <- left_join(df, ts_obj, by = c("PRNo" = "PRNO"))
 #     ) %>%
 #     glimpse()
 
-a2_2021 <- df %>%
+a2_1920 <- df %>%
     select(
         PRNo, Sector, 
         Denom_SecSchPersPct, Numer_SecSchPersPct,
@@ -90,7 +90,7 @@ a2_2021 <- df %>%
         Denom_PostSecEnrllPct, Numer_PostSecEnrllPct
     )
 
-a2_2021 <- a2_2021 %>%
+a2_1920 <- a2_1920 %>%
     mutate(
         Sector = factor(
             Sector,
@@ -104,7 +104,7 @@ a2_2021 <- a2_2021 %>%
         )
     )
 
-a2_2021 <- a2_2021 %>%
+a2_1920 <- a2_1920 %>%
     group_by(Sector) %>%
     summarise(across(-PRNo, sum)) %>%
     mutate(
@@ -115,4 +115,4 @@ a2_2021 <- a2_2021 %>%
         PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
-colnames(a2_2021) <- paste0(colnames(a2_2021), '_2021')
+colnames(a2_1920) <- paste0(colnames(a2_1920), '_1920')

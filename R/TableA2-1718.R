@@ -1,7 +1,7 @@
-fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
-ts2 <- read_excel(here::here("Data", "Data 2020-21", "TS2.xlsx"))
-ts3 <- read_excel(here::here("Data", "Data 2020-21", "TS3.xlsx"))
-ts4 <- read_excel(here::here("Data", "Data 2020-21", "TS4.xlsx"))
+fun <- read_excel(here::here("Data", "Data 2017-18", "FY2017TSFundedDetails-MinSecReg.xlsx"))
+ts2 <- read_excel(here::here("Data", "Data 2017-18", "tblTS2 2017-18.xlsx"))
+ts3 <- read_excel(here::here("Data", "Data 2017-18", "tblTS3 2017-18.xlsx"))
+ts4 <- read_excel(here::here("Data", "Data 2017-18", "tblTS4 2017-18.xlsx"))
 
 fun <- fun %>%
     select(PRNo, Sector)
@@ -28,7 +28,7 @@ ts4 <- ts4 %>%
     )
 
 df <- fun %>%
-    left_join(ts3) %>% 
+    right_join(ts3) %>% 
     left_join(ts4) %>%
     left_join(ts2, by = c("PRNo" = "PRNO"))
 
@@ -56,17 +56,6 @@ df <- df %>%
         TOCalc_PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
-ts_obj <- read_excel(here::here("Data", "Data 2020-21", "TSObjective.xlsx"))
-
-ts_obj <- ts_obj %>%
-    select(PRNO, SecSchPersPct, SecSchGradRegPct, SecSchGradRigPct, PostSecEnrllPct) %>%
-    mutate(
-        TSObj_SecSchPersPct = SecSchPersPct,
-        TSObj_SecSchGradRegPct = SecSchGradRegPct,
-        TSObj_SecSchGradRigPct = SecSchGradRigPct,
-        TSObj_PostSecEnrllPct = PostSecEnrllPct
-    )
-
 df <- left_join(df, ts_obj, by = c("PRNo" = "PRNO"))
 
 # df %>%
@@ -80,7 +69,7 @@ df <- left_join(df, ts_obj, by = c("PRNo" = "PRNO"))
 #     ) %>%
 #     glimpse()
 
-a2_2021 <- df %>%
+a2_1718 <- df %>%
     select(
         PRNo, Sector, 
         Denom_SecSchPersPct, Numer_SecSchPersPct,
@@ -90,7 +79,7 @@ a2_2021 <- df %>%
         Denom_PostSecEnrllPct, Numer_PostSecEnrllPct
     )
 
-a2_2021 <- a2_2021 %>%
+a2_1718 <- a2_1718 %>%
     mutate(
         Sector = factor(
             Sector,
@@ -104,7 +93,7 @@ a2_2021 <- a2_2021 %>%
         )
     )
 
-a2_2021 <- a2_2021 %>%
+a2_1718 <- a2_1718 %>%
     group_by(Sector) %>%
     summarise(across(-PRNo, sum)) %>%
     mutate(
@@ -115,4 +104,4 @@ a2_2021 <- a2_2021 %>%
         PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
-colnames(a2_2021) <- paste0(colnames(a2_2021), '_2021')
+colnames(a2_1718) <- paste0(colnames(a2_1718), '_1718')

@@ -1,7 +1,8 @@
-fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
-ts2 <- read_excel(here::here("Data", "Data 2020-21", "TS2.xlsx"))
-ts3 <- read_excel(here::here("Data", "Data 2020-21", "TS3.xlsx"))
-ts4 <- read_excel(here::here("Data", "Data 2020-21", "TS4.xlsx"))
+fun <- read_excel(here::here("Data", "Data 2018-19", "FY2018TSFundingDetails-MinSecReg.xlsx"))
+ts2 <- read_excel(here::here("Data", "Data 2018-19", "TS2 2018-19.xlsx"))
+ts3 <- read_excel(here::here("Data", "Data 2018-19", "TS3 2018-19.xlsx"))
+ts4 <- read_excel(here::here("Data", "Data 2018-19", "TS4 2018-19.xlsx"))
+ts_obj <- read_excel(here::here("Data", "Data 2018-19", "TSObjective 2018-19.xlsx"))
 
 fun <- fun %>%
     select(PRNo, Sector)
@@ -28,7 +29,7 @@ ts4 <- ts4 %>%
     )
 
 df <- fun %>%
-    left_join(ts3) %>% 
+    right_join(ts3) %>% 
     left_join(ts4) %>%
     left_join(ts2, by = c("PRNo" = "PRNO"))
 
@@ -56,7 +57,6 @@ df <- df %>%
         TOCalc_PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
-ts_obj <- read_excel(here::here("Data", "Data 2020-21", "TSObjective.xlsx"))
 
 ts_obj <- ts_obj %>%
     select(PRNO, SecSchPersPct, SecSchGradRegPct, SecSchGradRigPct, PostSecEnrllPct) %>%
@@ -80,7 +80,7 @@ df <- left_join(df, ts_obj, by = c("PRNo" = "PRNO"))
 #     ) %>%
 #     glimpse()
 
-a2_2021 <- df %>%
+a2_1819 <- df %>%
     select(
         PRNo, Sector, 
         Denom_SecSchPersPct, Numer_SecSchPersPct,
@@ -90,7 +90,7 @@ a2_2021 <- df %>%
         Denom_PostSecEnrllPct, Numer_PostSecEnrllPct
     )
 
-a2_2021 <- a2_2021 %>%
+a2_1819 <- a2_1819 %>%
     mutate(
         Sector = factor(
             Sector,
@@ -104,7 +104,7 @@ a2_2021 <- a2_2021 %>%
         )
     )
 
-a2_2021 <- a2_2021 %>%
+a2_1819 <- a2_1819 %>%
     group_by(Sector) %>%
     summarise(across(-PRNo, sum)) %>%
     mutate(
@@ -115,4 +115,4 @@ a2_2021 <- a2_2021 %>%
         PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
 
-colnames(a2_2021) <- paste0(colnames(a2_2021), '_2021')
+colnames(a2_1819) <- paste0(colnames(a2_1819), '_1819')
