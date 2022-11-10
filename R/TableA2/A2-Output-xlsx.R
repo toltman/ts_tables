@@ -32,7 +32,8 @@ write_xlsx(FAFSAdf, "FAFSA.xlsx")
 PostSecEnrllPctDf <- df %>%
     select(
         TSObj_PostSecEnrllPct, TOCalc_PostSecEnrllPct,
-        PSE_TotC1C2, RcvdRSDipNo, RcvdRSdipRigPgmNo,
-        Part4ADeceasedNo
+        RcvdRSDipNo, RcvdRSdipRigPgmNo, Part4BRcvdRSDipNotStdNo,
+        RcvdAltAwdNo, tot_RcvdRDipNO, tot_RcvdRDipRigPgmNo, 
+        tot_Part4CRcvdRSDipNotStdNo, tot_RcvdHSEquCredNO
     )
 write_xlsx(PostSecEnrllPctDf, "PostSecEnrllPct.xlsx")

@@ -19,7 +19,8 @@ ts4 <- ts4 %>%
     select(
         PRNo, Part4ADeceasedNo, PersistedNextNo, SecSchPersistPct,
         RcvdRSDipNo, RcvdRSdipRigPgmNo, SecSchGradPctI, SecSchGradPctII,
-        PSE_TotC1C2
+        Part4BRcvdRSDipNotStdNo, RcvdAltAwdNo, tot_RcvdRDipNO,
+        tot_RcvdRDipRigPgmNo, tot_Part4CRcvdRSDipNotStdNo, tot_RcvdHSEquCredNO
     ) %>%
     mutate(
         TS4_SecSchPersPct = SecSchPersistPct,
@@ -51,23 +52,12 @@ df <- df %>%
         Numer_fafsa = SenrCompFASFAPNO + SenrCompFASFAenrlCollgPNO,
         TOCalc_FAFSA = Numer_fafsa / Denom_fafsa,
 
-        Denom_PostSecEnrllPct = RcvdRSDipNo + RcvdRSdipRigPgmNo - Part4ADeceasedNo,
-        Numer_PostSecEnrllPct = PSE_TotC1C2,
+        Denom_PostSecEnrllPct = RcvdRSDipNo + RcvdRSdipRigPgmNo + 
+            Part4BRcvdRSDipNotStdNo + RcvdAltAwdNo,
+        Numer_PostSecEnrllPct = tot_RcvdRDipNO + tot_RcvdRDipRigPgmNo +
+            tot_Part4CRcvdRSDipNotStdNo + tot_RcvdHSEquCredNO,
         TOCalc_PostSecEnrllPct = Numer_PostSecEnrllPct / Denom_PostSecEnrllPct
     )
-
-df <- left_join(df, ts_obj, by = c("PRNo" = "PRNO"))
-
-# df %>%
-#     select(
-#         PRNo, Sector,
-#         TSObj_SecSchPersPct, TS4_SecSchPersPct, TOCalc_SecSchPersPct,
-#         TSObj_SecSchGradRegPct, TS4_SecSchGradPctI, TOCalc_SecSchGradRegPct,
-#         TSObj_SecSchGradRigPct, TS4_SecSchGradPctII, TOCalc_SecSchGradRigPct,
-#         TOCalc_FAFSA,
-#         TSObj_PostSecEnrllPct, TOCalc_PostSecEnrllPct
-#     ) %>%
-#     glimpse()
 
 a2_1718 <- df %>%
     select(
