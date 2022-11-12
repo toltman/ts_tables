@@ -33,7 +33,7 @@ ccd_dir <- read_csv(
 )
 
 # CCD Membership
-ccd_mem <- read_csv(
+members <- read_csv(
     here::here(
         "Data",
         "Other Data (non-APR)",
@@ -42,13 +42,19 @@ ccd_mem <- read_csv(
     ),
     col_types = cols_only(
         NCESSCH = "c",
+        TOTAL_INDICATOR = "c",
         STUDENT_COUNT = "d"
     )
 )
 
-ccd_mem <- ccd_mem %>%
-    group_by(NCESSCH) %>%
-    summarise(STUDENT_COUNT = sum(STUDENT_COUNT, na.rm = TRUE))
+ccd_mem <- members %>%
+    filter(TOTAL_INDICATOR == "Education Unit Total") %>%
+    mutate(enrll_cat = cut(
+        STUDENT_COUNT,
+        breaks = c(-1, 199, 499, 749, 999, Inf),
+        labels = c("Less than 200", "200-499", "500-749", "750-999", "1000 or more")
+    ))
+
 
 # School level
 ccd_sch <- read_csv(
@@ -77,16 +83,20 @@ ccd_lun <- read_csv(
     ),
     col_types = cols_only(
         NCESSCH = "c",
+        DATA_GROUP = "c",
         LUNCH_PROGRAM = "c",
+        TOTAL_INDICATOR = "c",
         STUDENT_COUNT = "d"
     )
 )
 
-frpl <- c("Reduced-price lunch qualified", "Free lunch qualified")
-ccd_lun <- ccd_lun %>%
-    filter(LUNCH_PROGRAM %in% frpl) %>%
-    group_by(NCESSCH) %>%
-    summarise(FRPL_COUNT = sum(STUDENT_COUNT, na.rm = TRUE))
+ccd_lun <- ccd_lun %>% 
+    filter(
+        TOTAL_INDICATOR == "Education Unit Total",
+        DATA_GROUP == "Free and Reduced-price Lunch Table"
+    ) %>%
+    rename(FRPL_COUNT = STUDENT_COUNT) %>%
+    select(NCESSCH, FRPL_COUNT)
 
 
 # Funding data for Sector
@@ -115,6 +125,8 @@ df <- ts_target %>%
     left_join(ccd_lun, by = c("NCESID" = "NCESSCH")) %>%
     left_join(fun, by = c("PRNo" = "PRNo"))
 
+
+
 missing <- df %>% filter(!complete.cases(.))
 write_xlsx(missing, "missing.xlsx")
 
@@ -123,7 +135,35 @@ df <- df %>%
     filter(complete.cases(.)) %>%
     filter(!duplicated(NCESID))
 
+# df <- df %>%
+#     mutate(
+#         CHARTER_TEXT = fct_collapse(CHARTER_TEXT,
+#             No = c("No", "Not applicable")
+#         ),
+#         MAGNET_TEXT = fct_collapse(MAGNET_TEXT,
+#             No = c("No", "Missing", "Not applicable", "Not reported")
+#         ),
+#         VIRTUAL = fct_collapse(VIRTUAL,
+#             Yes = "FULLVIRTUAL",
+#             No = c("FACEVIRTUAL", "MISSING", "Not reported", "NOTVIRTUAL", "SUPPVIRTUAL")
+#         ),
+#         sch_type = fct_cross(CHARTER_TEXT, MAGNET_TEXT, VIRTUAL),
+#         sch_type = fct_recode(sch_type,
+#             "Regular school" = "No:No:No",
+#             "Charter school" = "Yes:No:No",
+#             "Magnet school" = "No:Yes:No",
+#             "Virtual school" = "No:No:Yes",
+#             "Charter-Magnet school" = "Yes:Yes:No",
+#             "Charter-Virtual school" = "Yes:No:Yes"
+#         )
+#     )
+
 # Number of non-missing, non-duplicated NCESID/NCESSCH
 nrow(df)
 unique(df$NCESID) |> length()
 unique(df$NCESSCH) |> length()
+
+
+# complete.cases getting rid of some stuff we want to keep?
+# - the problem is probably missing FRPL_COUNTs are missing
+# need to get the CHARTER stuff back in
