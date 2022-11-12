@@ -12,11 +12,11 @@ ts_target <- ts_target %>%
     mutate(NCESID_num = as.numeric(NCESID)) %>%
     select(PRNo, NCESID, NCESID_num, SchoolNM, NumServed)
 
-ccd_dir <- read_excel(here::here(
+ccd_dir <- read_csv(here::here(
     "Data",
     "Other Data (non-APR)",
     "CCD School Directory 2020-21",
-    "XLSX_ccd_sch_029_1920_w_1a_082120.xlsx"
+    "ccd_sch_029_1920_w_1a_082120.csv"
 ))
 
 ccd_dir <- ccd_dir %>%
