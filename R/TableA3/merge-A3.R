@@ -3,10 +3,6 @@ library(readxl)
 library(here)
 library(writexl)
 
-# Funding data for Sector
-fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
-
-fun <- fun %>% select(PRNo, Sector)
 
 # TS Target Schools
 ts_target <- read_excel(
@@ -36,6 +32,7 @@ ccd_dir <- read_csv(
     )
 )
 
+# CCD Membership
 ccd_mem <- read_csv(
     here::here(
         "Data",
@@ -53,6 +50,7 @@ ccd_mem <- ccd_mem %>%
     group_by(NCESSCH) %>%
     summarise(STUDENT_COUNT = sum(STUDENT_COUNT, na.rm = TRUE))
 
+# School level
 ccd_sch <- read_csv(
     here::here(
         "Data",
@@ -69,6 +67,7 @@ ccd_sch <- read_csv(
     )
 )
 
+# Lunch programs
 ccd_lun <- read_csv(
     here::here(
         "Data",
@@ -90,15 +89,12 @@ ccd_lun <- ccd_lun %>%
     summarise(FRPL_COUNT = sum(STUDENT_COUNT, na.rm = TRUE))
 
 
+# Funding data for Sector
+fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
 
-df <- ts_target %>%
-    left_join(fun, by = c("PRNo" = "PRNo")) %>% 
-    left_join(ccd_dir, by = c("NCESID" = "NCESSCH"), keep = TRUE) %>%
-    left_join(ccd_mem, by = c("NCESID" = "NCESSCH")) %>%
-    left_join(ccd_sch, by = c("NCESID" = "NCESSCH")) %>%
-    left_join(ccd_lun, by = c("NCESID" = "NCESSCH"))
+fun <- fun %>% select(PRNo, Sector)
 
-df <- df %>%
+fun <- fun %>%
     mutate(
         Sector = factor(
             Sector,
@@ -112,25 +108,22 @@ df <- df %>%
         )
     )
 
+df <- ts_target %>%
+    left_join(ccd_dir, by = c("NCESID" = "NCESSCH"), keep = TRUE) %>%
+    left_join(ccd_mem, by = c("NCESID" = "NCESSCH")) %>%
+    left_join(ccd_sch, by = c("NCESID" = "NCESSCH")) %>%
+    left_join(ccd_lun, by = c("NCESID" = "NCESSCH")) %>%
+    left_join(fun, by = c("PRNo" = "PRNo"))
+
+missing <- df %>% filter(!complete.cases(.))
+write_xlsx(missing, "missing.xlsx")
 
 
-df %>% 
-    select(NCESID, STUDENT_COUNT, FRPL_COUNT) %>%
-    mutate(frpl_pct = FRPL_COUNT / STUDENT_COUNT) %>% 
-    filter(frpl_pct != Inf) %>%
-    summary()
+df <- df %>%
+    filter(complete.cases(.)) %>%
+    filter(!duplicated(NCESID))
 
-plot(x = df$STUDENT_COUNT, y = df$FRPL_COUNT)
-
-ggplot(df, aes(x = STUDENT_COUNT, y = FRPL_COUNT)) +
-    geom_point() +
-    geom_abline(slope = .2, intercept = 0, color = "red")
-
-ts_target %>% count(NCESID) %>% arrange(desc(n)) %>% filter(n != 1)
-df %>% filter(is.na(NCESSCH))
-df %>% filter(is.na(NCESSCH.dir))
-df %>% filter(is.na(NCESSCH.mem))
-df %>% filter(is.na(NCESSCH.sch))
-
-df %>% filter(is.na(NCESSCH.x) & is.na(NCESSCH.y))
-df %>% filter(is.na(NCESSCH.x) | is.na(NCESSCH.y))
+# Number of non-missing, non-duplicated NCESID/NCESSCH
+nrow(df)
+unique(df$NCESID) |> length()
+unique(df$NCESSCH) |> length()
