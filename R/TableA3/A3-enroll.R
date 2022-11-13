@@ -4,9 +4,9 @@ df <- ts_target %>%
     filter(complete.cases(.))
 
 
-df %>%
+a3_enrll <- df %>%
     group_by(Sector, enrll_cat) %>%
-    summarise(enrll = n()) %>%
+    summarise(enrll = n(), .groups = "drop") %>%
     pivot_wider(names_from = Sector, values_from = enrll) %>%
     janitor::adorn_totals("col") %>%
     relocate(Total, .after = enrll_cat) %>%

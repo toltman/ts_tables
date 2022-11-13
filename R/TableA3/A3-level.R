@@ -3,7 +3,7 @@ df <- ts_target %>%
     left_join(ccd_dir, by = c("NCESID" = "NCESSCH"), keep = TRUE) %>%
     filter(complete.cases(.))
 
-df %>%
+a3_level <- df %>%
     group_by(Sector, LEVEL) %>%
     summarise(value = n()) %>%
     pivot_wider(names_from = Sector, values_from = value, values_fill = 0) %>%

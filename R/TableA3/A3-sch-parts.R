@@ -1,6 +1,6 @@
 df <- ts_target %>% left_join(fun)
 
-df %>%
+a3_schparts <- df %>%
     group_by(Sector) %>%
     summarise(
         schools = n(),
