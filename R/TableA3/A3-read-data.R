@@ -13,8 +13,24 @@ ts_target <- read_excel(
     )
 )
 
+# see dups.xlsx and prno_join.xlsx for details
+ncesid_filter <- c(
+    "NA",
+    "99999999",
+    "400552000209",
+    "120060000849"
+)
+
 ts_target <- ts_target %>%
-    select(PRNo, NCESID, SchoolNM, NumServed)
+    select(PRNo, NCESID, NumServed) %>%
+    filter(
+        !(NCESID %in% ncesid_filter)
+    ) %>%
+    group_by(NCESID) %>%
+    summarise(
+        PRNo = first(PRNo),
+        NumServed = sum(NumServed)
+    )
 
 
 # CCD Directory of Schools
@@ -100,7 +116,9 @@ ccd_lun <- ccd_lun %>%
 
 
 # Funding data for Sector
-fun <- read_excel(here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx"))
+fun <- read_excel(
+    here::here("Data", "Data 2020-21", "FY2020TSFundedDetails-MinSecReg.xlsx")
+)
 
 fun <- fun %>% select(PRNo, Sector)
 
@@ -118,22 +136,22 @@ fun <- fun %>%
         )
     )
 
-df <- ts_target %>%
-    left_join(ccd_dir, by = c("NCESID" = "NCESSCH"), keep = TRUE) %>%
-    left_join(ccd_mem, by = c("NCESID" = "NCESSCH")) %>%
-    left_join(ccd_sch, by = c("NCESID" = "NCESSCH")) %>%
-    left_join(ccd_lun, by = c("NCESID" = "NCESSCH")) %>%
-    left_join(fun, by = c("PRNo" = "PRNo"))
+# df <- ts_target %>%
+#     left_join(ccd_dir, by = c("NCESID" = "NCESSCH"), keep = TRUE) %>%
+#     left_join(ccd_mem, by = c("NCESID" = "NCESSCH")) %>%
+#     left_join(ccd_sch, by = c("NCESID" = "NCESSCH")) %>%
+#     left_join(ccd_lun, by = c("NCESID" = "NCESSCH")) %>%
+#     left_join(fun, by = c("PRNo" = "PRNo"))
 
 
 
-missing <- df %>% filter(!complete.cases(.))
-write_xlsx(missing, "missing.xlsx")
+# missing <- df %>% filter(!complete.cases(.))
+# write_xlsx(missing, "missing.xlsx")
 
 
-df <- df %>%
-    filter(complete.cases(.)) %>%
-    filter(!duplicated(NCESID))
+# df <- df %>%
+#     filter(complete.cases(.)) %>%
+#     filter(!duplicated(NCESID))
 
 # df <- df %>%
 #     mutate(
@@ -159,9 +177,9 @@ df <- df %>%
 #     )
 
 # Number of non-missing, non-duplicated NCESID/NCESSCH
-nrow(df)
-unique(df$NCESID) |> length()
-unique(df$NCESSCH) |> length()
+# nrow(df)
+# unique(df$NCESID) |> length()
+# unique(df$NCESSCH) |> length()
 
 
 # complete.cases getting rid of some stuff we want to keep?
