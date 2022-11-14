@@ -33,3 +33,4 @@ final_a3 <- a3 %>%
         two_year, two_year_pct, other_pct
     )
 
+write_xlsx(final_a3, "TableA3.xlsx")
